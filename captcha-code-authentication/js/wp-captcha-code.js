@@ -58,11 +58,12 @@ jQuery(document).ready(function ($) {
     });
   } // open_upsell
 
-  if (window.localStorage.getItem('wp_captcha_code_upsell_shown') != 'true') {
-    open_upsell('cc-welcome');
+  // show upsell popup every 4 months
+  if (window.localStorage.getItem('captcha_upsell_timestamp') === null ||
+      (new Date().getTime() / 1000 - window.localStorage.getItem('captcha_upsell_timestamp')) > (86400 * 120)) {
+    window.localStorage.setItem('captcha_upsell_timestamp', Math.round(new Date().getTime() / 1000));
 
-    window.localStorage.setItem('wp_captcha_code_upsell_shown', 'true');
-    window.localStorage.setItem('wp_captcha_code_upsell_shown_timestamp', new Date().getTime());
+    open_upsell('cc-welcome');
   }
 
   if (window.location.hash == '#get-pro') {

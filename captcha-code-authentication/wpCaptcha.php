@@ -2,7 +2,7 @@
 /*
 Plugin Name: Captcha Code
 Description: Adds captcha to front-end forms.
-Version: 3.3
+Version: 3.31
 Author: WebFactory Ltd
 Author URI: https://www.webfactoryltd.com/
 License: GPL2
@@ -21,9 +21,15 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+// include only file
+if (!defined('ABSPATH')) {
+    wp_die(esc_html__('Do not open this file directly.', 'captcha-code-authentication'));
+}
+
 define('WP_CAPTCHA_CODE_URL', plugin_dir_url(__FILE__));
 define('WP_CAPTCHA_CODE_DIR', dirname(__FILE__));
 define('WP_CAPTCHA_CODE_OPTIONS', 'wp_captcha_code_options');
+define('WP_CAPTCHA_CODE_POINTERS_KEY', 'wp_captcha_code_pointers');
 
 require_once WP_CAPTCHA_CODE_DIR . '/wf-flyout/wf-flyout.php';
 
@@ -45,31 +51,33 @@ class WP_Captcha_Code
       new wf_flyout(__FILE__);
 
       add_action('admin_menu',  array(__CLASS__, 'admin_menu'));
+      add_action('wp_before_admin_bar_render', array(__CLASS__, 'admin_bar'));
       add_action('admin_enqueue_scripts', array(__CLASS__, 'admin_enqueue_scripts'));
       add_action('admin_action_wp_captcha_code_install_wp301', array(__CLASS__, 'install_wp301'));
       add_filter('admin_footer_text', array(__CLASS__, 'admin_footer_text'));
       add_filter('plugin_action_links_' . plugin_basename(__FILE__), array(__CLASS__, 'plugin_action_links'));
+      add_action('wp_ajax_wp_captcha_code_dismiss_pointers', array(__CLASS__, 'dismiss_pointers'));
     } else {
-      if ($options['show_login'] == 'yes') {
+      if ($options['enabled'] == 'yes' && $options['show_login'] == 'yes') {
         add_action('login_form', array(__CLASS__, 'captcha_for_login'));
         add_filter('login_errors', array(__CLASS__, 'captcha_login_errors'));
         add_filter('login_redirect', array(__CLASS__, 'captcha_login_redirect'), 10, 3);
       }
 
-      if ($options['show_comments'] == 'yes') {
+      if ($options['enabled'] == 'yes' && $options['show_comments'] == 'yes') {
         add_action('comment_form_after_fields', array(__CLASS__, 'captcha_comment_form'), 1);
         add_action('comment_form_logged_in_after', array(__CLASS__, 'captcha_comment_form'), 1);
         add_filter('preprocess_comment', array(__CLASS__, 'captcha_comment_post'));
       }
 
-      if ($options['show_registration'] == 'yes') {
+      if ($options['enabled'] == 'yes' && $options['show_registration'] == 'yes') {
         add_action('register_form', array(__CLASS__, 'wp_captcha_register'));
         add_action('register_post', array(__CLASS__, 'captcha_register_post'), 10, 3);
         add_action('signup_extra_fields', array(__CLASS__, 'wp_captcha_register'));
         add_filter('wpmu_validate_user_signup', array(__CLASS__, 'captcha_register_validate'));
       }
 
-      if ($options['show_lost_password'] == 'yes') {
+      if ($options['enabled'] == 'yes' && $options['show_lost_password'] == 'yes') {
         add_action('lostpassword_form', array(__CLASS__, 'captcha_lostpassword'));
         add_action('lostpassword_post', array(__CLASS__, 'captcha_lostpassword_post'), 10, 3);
       }
@@ -104,10 +112,43 @@ class WP_Captcha_Code
       $js_localize = array(
         'wp301_install_url' => add_query_arg(array('action' => 'wp_captcha_code_install_wp301', '_wpnonce' => wp_create_nonce('install_wp301'), 'rnd' => wp_rand()), admin_url('admin.php'))
       );
+
       wp_enqueue_script('wp-captcha-code-admin', WP_CAPTCHA_CODE_URL . 'js/wp-captcha-code.js', array('jquery'), self::$version, true);
       wp_localize_script('wp-captcha-code-admin', 'wp_captcha_code_vars', $js_localize);
+    } else {
+      $pointers = get_option(WP_CAPTCHA_CODE_POINTERS_KEY);
+
+      if ($pointers) {
+        $pointers['dismiss_pointer_nonce'] = wp_create_nonce('wp_captcha_code_dismiss_pointer');
+        wp_enqueue_script('wp-pointer');
+        wp_enqueue_style('wp-pointer');
+        wp_localize_script('wp-pointer', 'wp_captcha_code_pointers', $pointers);
+      }
+
+      if ($pointers) {
+        wp_enqueue_script('wp-captcha-code-pointers', WP_CAPTCHA_CODE_URL . 'js/wp-captcha-code-pointers.js', array('jquery'), self::$version, true);
+      }
     }
   } // admin_enqueue_scripts
+
+  static function reset_pointers()
+  {
+    $pointers = array();
+    $pointers['welcome'] = array('target' => '#menu-settings', 'edge' => 'left', 'align' => 'right', 'content' => 'Thank you for installing the <b style="font-weight: 800; font-variant: small-caps;">Captcha</b> plugin! Please open <a href="' . admin_url('options-general.php?page=captcha-code-authentication') . '">Settings -> Captcha</a> to set up your captcha and website protection settings.');
+
+    update_option(WP_CAPTCHA_CODE_POINTERS_KEY, $pointers);
+  } // reset_pointers
+
+  static function dismiss_pointers()
+  {
+    check_ajax_referer('wp_captcha_code_dismiss_pointer');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(__('You are not allowed to run this action.', 'captcha-code-authentication'));
+    }
+
+    delete_option(WP_CAPTCHA_CODE_POINTERS_KEY);
+  }
 
   static function is_plugin_page()
   {
@@ -159,9 +200,15 @@ class WP_Captcha_Code
     $change = false;
 
     if (!isset($options['meta'])) {
-      $options['meta'] = array('first_version' => self::$version, 'first_install' => current_time('timestamp', true));
+      $options['meta'] = array('first_version' => self::$version, 'first_install' => current_time('timestamp', true), 'pointer' => true);
+      self::reset_pointers();
+      $change = true;
+    } else if(!array_key_exists('pointer', $options['meta'])){
+      $options['meta']['pointer'] = true;
+      self::reset_pointers();
       $change = true;
     }
+
     if (!isset($options['dismissed_notices'])) {
       $options['dismissed_notices'] = array();
       $change = true;
@@ -169,7 +216,7 @@ class WP_Captcha_Code
 
     if (!isset($options['options'])) {
       $options['options'] = array();
-
+      $options['options']['enabled'] = get_option('wpcaptcha_enable') !== false ? get_option('wpcaptcha_enable') : 'no';
       $options['options']['show_login'] = get_option('wpcaptcha_login') !== false ? get_option('wpcaptcha_login') : 'yes';
       $options['options']['show_registration'] = get_option('wpcaptcha_register') !== false ? get_option('wpcaptcha_register') : 'yes';
       $options['options']['show_lost_password'] = get_option('wpcaptcha_lost') !== false ? get_option('wpcaptcha_lost') : 'yes';
@@ -180,6 +227,9 @@ class WP_Captcha_Code
       $options['options']['total_no_of_characters'] = get_option('wpcaptcha_total_no_of_characters') !== false ? get_option('wpcaptcha_total_no_of_characters') : 3;
 
       $change = true;
+    } else if (!isset($options['options']['enabled'])) {
+      $options['options']['enabled'] = 'yes';
+      $change = true;
     }
 
     if (isset($_POST['submit']) && isset($_POST['wpcatpcha_update_admin_options_nonce'])) {
@@ -188,6 +238,10 @@ class WP_Captcha_Code
                     <p><strong>' . esc_html__('Sorry, your nonce did not verify.', 'captcha-code-authentication') . '</strong></p>
                 </div>';
       } else {
+        if (isset($_POST['captcha_enabled'])) {
+          $options['options']['enabled'] = sanitize_text_field(wp_unslash($_POST['captcha_enabled']));
+        }
+
         if (isset($_POST['captcha_show_login'])) {
           $options['options']['show_login'] = sanitize_text_field(wp_unslash($_POST['captcha_show_login']));
         }
@@ -272,6 +326,31 @@ class WP_Captcha_Code
       array(__CLASS__, 'options_page')
     );
   } // admin_menu
+
+  // add admin bar menu and status
+    static function admin_bar()
+    {
+        global $wp_admin_bar;
+        $options = self::get_options();
+        // only show to admins
+        if (false === current_user_can('administrator') || false === apply_filters('captcha_code_show_admin_bar', true)) { //phpcs:ignore
+            return;
+        }
+
+        if (isset($options['enabled']) && $options['enabled'] == 'yes') {
+            $main_label = '<img style="height: 17px; margin-bottom: -4px; padding-right: 3px; filter: grayscale(100%);" src="' . WP_CAPTCHA_CODE_URL . 'images/wp-captcha-icon.png" alt="' . esc_attr__('Captcha is enabled', 'captcha-code-authentication') . '" title="' . esc_attr__('Captcha is enabled', 'captcha-code-authentication') . '" /> <span class="ab-label">' . esc_attr__('Captcha is', 'captcha-code-authentication') . ' <b style="font-weight: 700;">ON</b></span>';
+        } else {
+            $main_label = '<img style="height: 17px; margin-bottom: -4px; padding-right: 3px; filter: grayscale(100%);" src="' . WP_CAPTCHA_CODE_URL . 'images/wp-captcha-icon.png" alt="' . esc_attr__('Captcha is disabled', 'captcha-code-authentication') . '" title="' . esc_attr__('Captcha is disabled', 'captcha-code-authentication') . '" /> <span class="ab-label">' . esc_attr__('Captcha is', 'captcha-code-authentication') . ' <b style="font-weight: 700;">OFF</b></span>';
+        }
+
+        $wp_admin_bar->add_menu(array(
+            'parent' => '',
+            'id'     => 'captcha-code',
+            'title'  => $main_label,
+            'href'   => admin_url('options-general.php?page=captcha-code-authentication'),
+            'meta'   => array('class' => '')
+        ));
+    } // admin_bar
 
   static function captcha_for_login()
   {
@@ -551,7 +630,7 @@ class WP_Captcha_Code
     ob_start();
     imagejpeg($image); //showing the image
     echo '<img src="data:image/png;base64,' . esc_html(base64_encode(ob_get_clean())) . '" width="100">';
-    imagedestroy($image); //destroying the image instance
+
     $_SESSION['captcha_code'] = $code;
   } // generate_captcha_image
 
@@ -589,6 +668,13 @@ class WP_Captcha_Code
   {
     $options = self::get_options();
 
+    // auto remove welcome pointer when options are opened
+    $pointers = get_option(WP_CAPTCHA_CODE_POINTERS_KEY);
+    if (isset($pointers['welcome'])) {
+      unset($pointers['welcome']);
+      update_option(WP_CAPTCHA_CODE_POINTERS_KEY, $pointers);
+    }
+
     echo '<div class="wrap">';
     echo '<h1><img src="' . esc_url(WP_CAPTCHA_CODE_URL . '/images/wp-captcha-logo.png') . '" alt="WP Captcha PRO" title="WP Captcha PRO"></h1>';
     echo '<form method="post" action="">';
@@ -604,7 +690,16 @@ class WP_Captcha_Code
     $captcha[] = array('val' => 'cloudflare', 'label' => 'Cloudflare Turnstile', 'class' => 'pro-option');
 
     echo '<tr valign="top">
-        <th scope="row"><label for="captcha">Captcha:</label></th>
+                        <th scope="row"><label for="captcha_enabled">' . esc_html__('Enable Captcha Protection', 'captcha-code-authentication') . ':</label></th>
+                        <td>
+                            <select name="captcha_enabled" id="captcha_enabled" style="width:75px;margin:0;">
+                                <option value="yes" ' . ($options['enabled'] == 'yes' ? 'selected="selected"' : '') . '>' . esc_html__('Yes', 'captcha-code-authentication') . '</option>
+                                <option value="no" ' . ($options['enabled'] != 'yes' ? 'selected="selected"' : '') . '>' . esc_html__('No', 'captcha-code-authentication') . '</option>
+                            </select>
+                        </td>
+                    </tr>';
+    echo '<tr valign="top">
+        <th scope="row"><label for="captcha">Captcha Type:</label></th>
         <td><select id="cc-captcha" name="">';
     self::create_select_options($captcha, 'builtin');
     echo '</select>';
@@ -640,6 +735,24 @@ class WP_Captcha_Code
     }
     echo '</select>
                         </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row"><label for="stats">' . esc_html__('Stats', 'captcha-code-authentication') . ':</label></th>
+                        <td>
+                            <a href="#" class="button open-upsell" data-feature="cc-stats">Show Stats</a><p class="description">This is a <b>PRO</b> feature.</p></a>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row"><label for="firewall">' . esc_html__('Firewall & Country Blocking', 'captcha-code-authentication') . ':</label></th>
+                        <td>
+                            <a href="#" class="button open-upsell" data-feature="cc-firewall">Configure Firewall</a><p class="description">This is a <b>PRO</b> feature.</p></a>
+                        </td>
+                    </tr>
+                    <tr height="60">
+                        <td>';
+    submit_button();
+    echo '</td>
+                        <td></td>
                     </tr>
                 </table>
                 <h3>' . esc_html__('Display Options', 'captcha-code-authentication') . '</h3>
@@ -1238,7 +1351,13 @@ class WP_Captcha_Code
       return $styles;
     });
   } // is_plugin_installed
+
+  static function activate()
+  {
+    self::reset_pointers();
+  } // activate
 } // WP_Captcha_Code
 
+register_activation_hook(__FILE__, array('WP_Captcha_Code', 'activate'));
 add_action('init', array('WP_Captcha_Code', 'init'));
 

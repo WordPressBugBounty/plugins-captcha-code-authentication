@@ -2,8 +2,8 @@
 Contributors: WebFactory
 Tags: captcha, recaptcha, form captcha, login captcha, comments spam
 Requires at least: 3.0
-Tested up to: 6.9
-Stable tag: 3.3
+Tested up to: 7.0
+Stable tag: 3.31
 Requires PHP: 5.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -11,7 +11,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 GDPR compatible captcha anti-spam protection for login form, comments form, registration form & lost password form. Eliminate spam with captcha.
 
 == Description ==
-Adds GDPR compatible captcha code anti-spam protection to WordPress forms - comments form, registration form, lost password form, and login form. In order to post comments or register, users have to type in the code shown on the image. This prevents spam from automated bots & adds security. No external services (like Google ReCaptcha) are used. No API keys are needed, and no user-identifiable data is used so it's GDPR compatible.
+<a href="https://getwpcaptcha.com/">Captcha</a> adds GDPR compatible captcha code anti-spam protection (like Google ReCaptcha) to WordPress forms - comments form, registration form, lost password form, and login form. In order to post comments or register, users have to type in the code shown on the image. This prevents spam from automated bots & adds security. No external services (like Google ReCaptcha) are used. No API keys are needed, and no user-identifiable data is used so it's GDPR compatible.
 
 = Features =
 1. Captcha position - comments form, login form, registration form, or lost password form.
@@ -55,6 +55,10 @@ Uninstalling is as simple as deactivating and deleting the plugin.
 
 
 == Changelog ==
+= 3.31 =
+* 2026/04/14
+* added menu bar status
+
 = 3.3 =
 * 2025/08/04
 * minor code fixes

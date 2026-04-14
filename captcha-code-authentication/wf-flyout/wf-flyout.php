@@ -5,6 +5,7 @@
  * (c) WebFactory Ltd, 2023
  */
 
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 if (false == class_exists('wf_flyout')) {
   class wf_flyout

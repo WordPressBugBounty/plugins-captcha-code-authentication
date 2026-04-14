@@ -1,4 +1,6 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 $config = array();
 
 $config['plugin_screen'] = 'settings_page_captcha-code-authentication';
