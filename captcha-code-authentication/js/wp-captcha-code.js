@@ -51,16 +51,16 @@ jQuery(document).ready(function ($) {
 
     $('#wp-captcha-code-pro-dialog').dialog('open');
 
-    $('#wp-captcha-code-pro-table .button-buy').each(function (ind, el) {
+    $('#wp-captcha-code-pro-dialog .button-buy').each(function (ind, el) {
       tmp = $(el).data('href-org');
       tmp = tmp.replace('pricing-table', feature);
       $(el).attr('href', tmp);
     });
   } // open_upsell
 
-  // show upsell popup every 4 months
+  // show upsell popup every 3 months
   if (window.localStorage.getItem('captcha_upsell_timestamp') === null ||
-      (new Date().getTime() / 1000 - window.localStorage.getItem('captcha_upsell_timestamp')) > (86400 * 120)) {
+      (new Date().getTime() / 1000 - window.localStorage.getItem('captcha_upsell_timestamp')) > (86400 * 90)) {
     window.localStorage.setItem('captcha_upsell_timestamp', Math.round(new Date().getTime() / 1000));
 
     open_upsell('cc-welcome');

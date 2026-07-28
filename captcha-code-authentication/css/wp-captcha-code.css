@@ -164,6 +164,18 @@ a.button.button-buy:focus {
   padding: 15px;
 }
 
+.wp-captcha-code-pro-dialog .upsell-footer-2 {
+  padding: 10px;
+  text-align: center;
+  background-color: #4285f4;
+  color: white;
+  margin: 0 -16px 0 -16px;
+}
+
+.wp-captcha-code-pro-dialog .upsell-footer-2 a {
+  color: white;
+}
+
 .wp-captcha-code-pro-dialog .logo span {
   display: block;
   font-size: 18px;
@@ -176,7 +188,7 @@ a.button.button-buy:focus {
 
 #wp-captcha-code-pro-table {
   width: 100%;
-  margin: 10px auto 10px auto;
+  margin: 0 auto 0 auto;
   border-collapse: collapse;
 }
 
@@ -241,7 +253,7 @@ a.button.button-buy:focus {
 }
 
 #wp-captcha-code-pro-table tr:last-child td {
-  padding: 20px 0 20px 0;
+  padding: 10px 0 10px 0;
   vertical-align: top;
 }
 

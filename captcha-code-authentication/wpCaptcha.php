@@ -2,7 +2,7 @@
 /*
 Plugin Name: Captcha Code
 Description: Adds captcha to front-end forms.
-Version: 3.31
+Version: 3.32
 Author: WebFactory Ltd
 Author URI: https://www.webfactoryltd.com/
 License: GPL2
@@ -815,7 +815,7 @@ class WP_Captcha_Code
     echo '<div id="wp_captcha_code_sidebar">';
     echo '<div class="sidebar-box pro-ad-box">
                 <p class="text-center"><a href="#" data-pro-feature="cc-sidebar-box-logo" class="open-pro-dialog">
-                <img src="' . esc_url(WP_CAPTCHA_CODE_URL . '/images/wp-captcha-logo.png') . '" alt="WP Captcha PRO" title="WP Captcha PRO"></a><br><b>PRO version is here! Grab the launch discount.</b></p>
+                <img src="' . esc_url(WP_CAPTCHA_CODE_URL . '/images/wp-captcha-logo.png') . '" alt="WP Captcha PRO" title="WP Captcha PRO"></a><br><b>Get the PRO version for ONLY $9.99</b></p>
                 <ul class="plain-list">
                     <li>7 Types of Captcha + GDPR Compatibility</li>
                     <li>Login Page Customization - Visual &amp; URL</li>
@@ -831,7 +831,7 @@ class WP_Captcha_Code
                     <li>Email support from plugin developers</li>
                 </ul>
 
-                <p class="text-center"><a href="#" class="open-pro-dialog button button-buy" data-pro-feature="cc-sidebar-box">Get PRO Now</a></p>
+                <p class="text-center"><a href="#" class="open-pro-dialog button button-buy" data-pro-feature="cc-sidebar-box">Get PRO Now for ONLY $9.99</a></p>
                 </div>';
 
     if (!defined('EPS_REDIRECT_VERSION') && !defined('WF301_PLUGIN_FILE')) {
@@ -859,7 +859,7 @@ class WP_Captcha_Code
 
             <div class="center logo"><a href="https://getwpcaptcha.com/?ref=wp-captcha-code-free-pricing-table" target="_blank"><img src="' . esc_url(WP_CAPTCHA_CODE_URL . '/images/wp-captcha-logo.png') . '" alt="WP Captcha PRO" title="WP Captcha PRO"></a><br>
 
-            <span>Grab the limited PRO <b>Launch Discount</b></span>
+            <span>Grab our recession-proof <b>DISCOUNTED PRICES</b></span>
             </div>
 
             <table id="wp-captcha-code-pro-table">
@@ -942,13 +942,14 @@ class WP_Captcha_Code
             </tr>
 
             <tr>
-            <td><a class="button button-buy" data-href-org="https://getwpcaptcha.com/buy/?product=personal-yearly-launch&ref=pricing-table" href="https://getwpcaptcha.com/buy/?product=personal-yearly-launch&ref=pricing-table" target="_blank"><del>$59</del> $49 <small>/y</small><br>BUY NOW</a>
-            <br>or <a class="button-buy" data-href-org="https://getwpcaptcha.com/buy/?product=personal-ltd-launch&ref=pricing-table" href="https://getwpcaptcha.com/buy/?product=personal-ltd-launch&ref=pricing-table" target="_blank">only <del>$99</del> $79 for a lifetime license</a></td>
+            <td><a class="button button-buy" data-href-org="https://getwpcaptcha.com/buy/?product=personal-yearly-launch&ref=pricing-table" href="https://getwpcaptcha.com/buy/?product=personal-yearly-launch&ref=pricing-table" target="_blank"><del>$59</del> $49 <small>/y</small><br>BUY NOW</a></td>
             <td><a class="button button-buy" data-href-org="https://getwpcaptcha.com/buy/?product=team-yearly-launch&ref=pricing-table" href="https://getwpcaptcha.com/buy/?product=team-yearly-launch&ref=pricing-table" target="_blank"><del>$119</del> $99 <small>/y</small><br>BUY NOW</a></td>
             <td><a class="button button-buy" data-href-org="https://getwpcaptcha.com/buy/?product=agency-yearly-launch&ref=pricing-table" href="https://getwpcaptcha.com/buy/?product=agency-yearly-launch&ref=pricing-table" target="_blank"><del>$149</del> $119 <small>/y</small><br>BUY NOW</a></td>
             </tr>
 
             </table>
+
+            <div class="upsell-footer-2 center">Need the plugin only for a <b>short period of time</b>? <a class="button-buy" target="_blank" data-href-org="https://getwpcaptcha.com/buy/?product=personal-monthly&ref=pricing-table" href="https://getwpcaptcha.com/buy/?product=personal-monthly&ref=pricing-table"><b>Get it for ONLY $9.99</b><small> /month</small></a> &amp; cancel any time!</div>
 
             <div class="center footer"><b>100% No-Risk Money Back Guarantee!</b> If you don\'t like the plugin over the next 7 days, we will happily refund 100% of your money. No questions asked! Payments are processed by our merchant of records - <a href="https://paddle.com/" target="_blank">Paddle</a>.</div>
           </div>';
